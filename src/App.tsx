@@ -9,27 +9,45 @@ function App() {
     category: 'vegetables' | 'pork' | 'beef' | 'chicken' | 'fish' | 'desserts',
     quantity: number,
     dateFrozen: string,
-    expirationDate: string
+    expirationDate: string,
     status: 'fresh' | 'expiringSoon' | 'expired'
   }
 
-  const [items, setItems] = useState<Item[]>([{
-    name: 'Apples',
-    category: 'vegetables',
-    quantity: 10,
-    dateFrozen: '2 Date23-10-01',
-    expirationDate: '2023-10-10',
-    status: 'fresh'
-  }])
+  const today: string = new Date().toISOString().split('T')[0];
+
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
+
+  const [items, setItems] = useState<Item[]>([]);
 
   const [addItem, setAddItem] = useState<Item>({
     name: '',
-    category: 'vegetables',  // default
+    category: 'vegetables',
     quantity: 0,
     dateFrozen: '',
     expirationDate: '',
-    status: 'fresh',         // default
+    status: 'fresh'
   });
+
+  const handleAddItem = (e: React.FormEvent<HTMLFormElement>) => {
+
+    e.preventDefault();
+
+    if (addItem) {
+      setItems([...items, addItem])
+      setAddItem({
+        name: '',
+        category: 'vegetables',
+        quantity: 0,
+        dateFrozen: today,
+        expirationDate: '',
+        status: 'fresh'
+      })
+      setIsModalOpen(false)
+    } else {
+      setAddItem(newItem)
+      setIsModalOpen(false)
+    }
+  }
 
 
   useEffect(() => {
@@ -43,13 +61,13 @@ function App() {
       <div className='bg-white mx-auto max-w-sm p-4 rounded-xl shadow-md'>
         <h1 className='text-3xl font-bold mb-4'>Frozen Track</h1>
         <h3 className='text-xl font-semibold mb-2'>Inventory</h3>
-        <button className='bg-blue-500 text-white px-4 py-2 rounded-md mb-4 w-full hover:bg-blue-600 hover:cursor-pointer'>Add Item</button>
+        <button className='bg-blue-500 text-white px-4 py-2 rounded-md mb-4 w-full hover:bg-blue-600 hover:cursor-pointer' onClick={() => setIsModalOpen(true)}>Add Item</button>
         <input type="text" placeholder="Search" className='border border-gray-300 px-4 py-2 rounded-md mb-4 w-full' />
         <table className='w-full'>
           <thead>
             <tr className='border-b-2 border-gray-300'>
               <th className='text-left font-normal py-3'>Name</th>
-              <th className='text-left font-normal py-3'>Quantity</th>
+              <th className='text-left font-normal py-3'>Qty</th>
               <th className='text-left font-normal py-3'>Status</th>
               <th className='text-left font-normal py-3'>Actions</th>
             </tr>
@@ -74,19 +92,41 @@ function App() {
         </div>
       </div>
       {/* Add Item Form */}
-      <div className='bg-white p-4 rounded-xl shadow-md w-full max-w-sm'>
-        <h1 className='text-3xl font-bold mb-4'>Add Item</h1>
-        <form>
-          <input type="text" placeholder='Name' className='border-2 border-gray-300 p-2 rounded-md w-full mb-4' value={addItem?.name || ''} onChange={(e) => setAddItem({ ...addItem, name: e.target.value })} />
-          <input type="text" placeholder='Category' className='border-2 border-gray-300 p-2 rounded-md w-full mb-4' value={addItem?.category || ''} onChange={(e) => setAddItem({ ...addItem, category: e.target.value })} />
-          <input type="text" placeholder='Quantity' className='border-2 border-gray-300 p-2 rounded-md w-full mb-4' value={addItem?.quantity.toString() || ''} onChange={(e) => setAddItem({ ...addItem, quantity: parseInt(e.target.value) || 0 })} />
-          <input type="date" placeholder='Date Frozen' className='border-2 border-gray-300 p-2 rounded-md w-full mb-4' value={addItem?.dateFrozen.toString() || ''} onChange={(e) => setAddItem({ ...addItem, dateFrozen: new Date(e.target.value) })} />
-          <input type="date" placeholder='Expiration Date' className='border-2 border-gray-300 p-2 rounded-md w-full mb-4' value={addItem?.expirationDate.toString() || ''} onChange={(e) => setAddItem({ ...addItem, expirationDate: new Date(e.target.value) })} />
-          <div className='flex justify-end'>
-            <button className='bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600'>Add</button>
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+          <div className='bg-white p-4 rounded-xl shadow-md w-full max-w-sm'>
+            <h1 className='text-3xl font-bold mb-4'>Add Item</h1>
+            <form onSubmit={handleAddItem}>
+              <input type="text" placeholder='Name' className='border-2 border-gray-300 p-2 rounded-md w-full mb-4' value={addItem?.name || ''} onChange={(e) => setAddItem({ ...addItem, name: e.target.value })} />
+              <select
+                className="border-2 border-gray-300 p-2 rounded-md w-full mb-4"
+                value={addItem.category}
+                onChange={(e) =>
+                  setAddItem({
+                    ...addItem,
+                    category: e.target.value as 'vegetables' | 'pork' | 'beef' | 'chicken' | 'fish' | 'desserts',
+                  })
+                }
+              >
+                <option value="vegetables">Vegetables</option>
+                <option value="pork">Pork</option>
+                <option value="beef">Beef</option>
+                <option value="chicken">Chicken</option>
+                <option value="fish">Fish</option>
+                <option value="desserts">Desserts</option>
+              </select>
+
+              <input type="number" placeholder='Quantity' className='border-2 border-gray-300 p-2 rounded-md w-full mb-4' value={addItem?.quantity.toString() || ''} onChange={(e) => setAddItem({ ...addItem, quantity: parseInt(e.target.value) || 0 })} />
+              <input type="date" placeholder='Expiration Date' className='border-2 border-gray-300 p-2 rounded-md w-full mb-4' value={addItem?.expirationDate || ''} onChange={(e) => setAddItem({ ...addItem, expirationDate: e.target.value })} />
+              <div className='flex justify-end'>
+                <button className='bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600' type='submit' >Add</button>
+                <button className='bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 ms-2' onClick={() => setIsModalOpen(false)}>Cancel</button>
+              </div>
+            </form>
           </div>
-        </form>
-      </div>
+        </div>
+      )}
+
     </div>
   )
 }
