@@ -8,7 +8,7 @@ function App() {
     name: string,
     category: 'vegetable' | 'pork' | 'beef' | 'chicken' | 'fish' | 'dessert',
     quantity: number,
-    unit: 'pcs' | 'pack' | 'kg' | 'g' | 'bottle'
+    unit: '' | 'pcs' | 'pack' | 'kg' | 'g' | 'bottle',
     dateFrozen: string,
     expirationDate: string,
     status: 'fresh' | 'expiringSoon' | 'expired'
@@ -26,12 +26,17 @@ function App() {
     name: '',
     category: 'vegetable',
     quantity: 1,
-    unit: 'pcs',
+    unit: '',
     dateFrozen: today,
     expirationDate: '',
     status: 'fresh'
   });
 
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
+
+
+  const [viewModal, setViewModal] = useState<boolean>(false);
 
 
   const handleAddItem = (e: React.FormEvent<HTMLFormElement>): void => {
@@ -71,8 +76,16 @@ function App() {
 
   const handleDeleteItem = (index: number): void => {
     setItems(prevItems => prevItems.filter((_, i) => i !== index))
+    setSelectedItem(null)
+    setSelectedIndex(null)
   }
 
+  const handleSelectItem = (index: number, item: Item): void => {
+    console.log('Selected item at index', index, ':', item)
+    setSelectedItem(item)
+    setSelectedIndex(index)
+    setViewModal(true)
+  }
 
   useEffect(() => {
     console.log('Adding item:', addItem)
@@ -100,7 +113,7 @@ function App() {
         </div>
         <div className='flex items-center mb-2'>
           <h3 className='text-lg font-medium '>All Items</h3>
-          <button className='ms-auto text-sm hover:cursor-pointer transition-transform duration-150 active:scale-90 hover:text-blue-500'>Edit</button>
+          {/* <button className='ms-auto text-sm hover:cursor-pointer transition-transform duration-150 active:scale-90 hover:text-blue-500'>Edit</button> */}
         </div>
 
         <div className='w-full'>
@@ -116,6 +129,13 @@ function App() {
                     <span className="inline-flex items-center rounded-xl bg-green-400/10 px-1.5 py-0.5  text-xs font-medium text-green-400 inset-ring inset-ring-green-500/20">
                       {item.status}
                     </span>
+                  </div>
+                  <div className='ms-2'>
+                    <button
+                      className='py-2 rounded-md hover:cursor-pointer'
+                      onClick={() => handleSelectItem(index, item)}>
+                      <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 1024 1024" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M396 512a112 112 0 1 0 224 0 112 112 0 1 0-224 0zm546.2-25.8C847.4 286.5 704.1 186 512 186c-192.2 0-335.4 100.5-430.2 300.3a60.3 60.3 0 0 0 0 51.5C176.6 737.5 319.9 838 512 838c192.2 0 335.4-100.5 430.2-300.3 7.7-16.2 7.7-35 0-51.5zM508 688c-97.2 0-176-78.8-176-176s78.8-176 176-176 176 78.8 176 176-78.8 176-176 176z"></path></svg>
+                    </button>
                   </div>
 
                   {/* <div>
@@ -160,7 +180,7 @@ function App() {
             <h1 className='text-3xl font-bold mb-4'>Add Item</h1>
             <form onSubmit={handleAddItem}>
               <label className="text-md font-semibold mb-2 block">Name</label>
-              <input type="text" placeholder='Name' className='border-2 border-gray-300 p-2 rounded-md w-full mb-2' value={addItem?.name || ''} onChange={(e) => setAddItem({ ...addItem, name: e.target.value })} />
+              <input type="text" placeholder='Name' className='border-2 border-gray-300 p-2 rounded-md w-full mb-2' value={addItem?.name || ''} onChange={(e) => setAddItem({ ...addItem, name: e.target.value })} required />
               <label className="text-md font-semibold mb-2 block">Category</label>
               <select
                 className="border-2 border-gray-300 p-2 rounded-md w-full mb-2"
@@ -171,6 +191,7 @@ function App() {
                     category: e.target.value as 'vegetable' | 'pork' | 'beef' | 'chicken' | 'fish' | 'dessert',
                   })
                 }
+                required
               >
                 <option value="vegetables">Vegetable</option>
                 <option value="pork">Pork</option>
@@ -184,12 +205,13 @@ function App() {
 
                 <input
                   type="number"
-                  min={0}
+                  min={1}
                   className="border-2 border-gray-300 p-2 rounded-md w-2/3"
                   value={addItem.quantity}
                   onChange={(e) =>
                     setAddItem({ ...addItem, quantity: Number(e.target.value) })
                   }
+                  required
                 />
 
                 <select
@@ -198,7 +220,9 @@ function App() {
                   onChange={(e) =>
                     setAddItem({ ...addItem, unit: e.target.value as Item['unit'] })
                   }
+                  required
                 >
+                  <option value="" disabled >Select</option>
                   <option value="pcs">pcs</option>
                   <option value="pack">pack</option>
                   <option value="kg">kg</option>
@@ -208,7 +232,7 @@ function App() {
               </div>
 
               <label className="text-md font-semibold mb-2 block">Expiration Date</label>
-              <input type="date" placeholder='Expiration Date' className='border-2 border-gray-300 p-2 rounded-md w-full mb-4' value={addItem?.expirationDate || ''} onChange={(e) => setAddItem({ ...addItem, expirationDate: e.target.value })} />
+              <input type="date" placeholder='Expiration Date' className='border-2 border-gray-300 p-2 rounded-md w-full mb-4' value={addItem?.expirationDate || ''} onChange={(e) => setAddItem({ ...addItem, expirationDate: e.target.value })} required />
               <div className='flex justify-end mt-2'>
                 <button className='bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600' type='submit' >Add</button>
                 <button className='bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 ms-2' onClick={() => setIsModalOpen(false)}>Cancel</button>
@@ -217,6 +241,97 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* View Item Modal */}
+      {viewModal && selectedItem && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+          <div className="bg-white px-4 py-6 rounded-xl shadow-md w-full max-w-sm">
+            <h1 className="text-3xl font-bold mb-4">Item Details</h1>
+
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm font-semibold text-gray-600 mb-1">Name</p>
+                <p className="border-2 border-gray-200 p-2 rounded-md">
+                  {selectedItem.name}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-sm font-semibold text-gray-600 mb-1">Category</p>
+                <p className="border-2 border-gray-200 p-2 rounded-md capitalize">
+                  {selectedItem.category}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-sm font-semibold text-gray-600 mb-1">Status</p>
+                <p className="border-2 border-gray-200 p-2 rounded-md capitalize">
+                  {selectedItem.status}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-sm font-semibold text-gray-600 mb-1">Quantity</p>
+                <p className="border-2 border-gray-200 p-2 rounded-md">
+                  {selectedItem.quantity} {selectedItem.unit}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-600 mb-1">
+                  Freeze Date
+                </p>
+                <p className="border-2 border-gray-200 p-2 rounded-md">
+                  {selectedItem.dateFrozen || 'N/A'}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-600 mb-1">
+                  Expiration Date
+                </p>
+                <p className="border-2 border-gray-200 p-2 rounded-md">
+                  {selectedItem.expirationDate || 'N/A'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-end mt-6 gap-1.5">
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                onClick={() => {
+                  setViewModal(false)
+                  // setIsModalOpen(true) // open edit modal
+                  setAddItem(selectedItem)
+                }}
+              >
+                Edit
+              </button>
+
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                onClick={() => {
+                  if (selectedIndex === null) return
+
+                  if (confirm('Delete this item?')) {
+                    handleDeleteItem(selectedIndex)
+                    setViewModal(false)
+                  }
+                }}
+
+              >
+                Delete
+              </button>
+              <button
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
+                onClick={() => setViewModal(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
 
     </div>
   )
