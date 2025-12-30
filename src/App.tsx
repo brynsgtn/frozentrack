@@ -37,6 +37,7 @@ function App() {
 
 
   const [viewModal, setViewModal] = useState<boolean>(false);
+  const [editModal, setEditModal] = useState<boolean>(false);
 
 
   const handleAddItem = (e: React.FormEvent<HTMLFormElement>): void => {
@@ -85,6 +86,22 @@ function App() {
     setSelectedItem(item)
     setSelectedIndex(index)
     setViewModal(true)
+  }
+
+  const openEditItemModal = (index: number, item: Item): void => {
+    setViewModal(false)
+    setEditModal(true)
+    setSelectedItem(item)
+    setSelectedIndex(index)
+  }
+
+  const handleEditItem = (index: number, selectedItem: Item): void => {
+    setItems(prevItems =>
+      prevItems.map((item, i) => i === index ? selectedItem : item)
+    );
+    setEditModal(false)
+    setSelectedItem(null)
+    setSelectedIndex(null)
   }
 
   useEffect(() => {
@@ -297,11 +314,7 @@ function App() {
             <div className="flex justify-end mt-6 gap-1.5">
               <button
                 className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-                onClick={() => {
-                  setViewModal(false)
-                  // setIsModalOpen(true) // open edit modal
-                  setAddItem(selectedItem)
-                }}
+                onClick={() => openEditItemModal(selectedIndex!, selectedItem)}
               >
                 Edit
               </button>
@@ -332,6 +345,124 @@ function App() {
       )}
 
 
+      {/* Edit Item Modal */}
+      {editModal && selectedItem && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+          <div className="bg-white px-4 py-6 rounded-xl shadow-md w-full max-w-sm">
+            <h1 className="text-3xl font-bold mb-4">Edit Item</h1>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-semibold text-gray-600 mb-1 block">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  value={selectedItem.name}
+                  onChange={(e) =>
+                    setSelectedItem({ ...selectedItem, name: e.target.value })
+                  }
+                  className="border-2 border-gray-200 p-2 rounded-md w-full"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold text-gray-600 mb-1 block">
+                  Category
+                </label>
+                <input
+                  type="text"
+                  value={selectedItem.category}
+                  onChange={(e) =>
+                    setSelectedItem({ ...selectedItem, category: e.target.value as 'vegetable' | 'pork' | 'beef' | 'chicken' | 'fish' | 'dessert', })
+                  }
+                  className="border-2 border-gray-200 p-2 rounded-md w-full capitalize"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold text-gray-600 mb-1 block">
+                  Status
+                </label>
+                <select
+                  value={selectedItem.status}
+                  onChange={(e) =>
+                    setSelectedItem({ ...selectedItem, status: e.target.value as 'fresh' | 'expiringSoon' | 'expired' })
+                  }
+                  className="border-2 border-gray-200 p-2 rounded-md w-full"
+                >
+                  <option value="fresh">Fresh</option>
+                  <option value="expiringSoon">Expiring</option>
+                  <option value="expired">Expired</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold text-gray-600 mb-1 block">
+                  Quantity
+                </label>
+                <input
+                  type="number"
+                  value={selectedItem.quantity}
+                  min={1}
+                  onChange={(e) =>
+                    setSelectedItem({ ...selectedItem, quantity: Number(e.target.value) })
+                  }
+                  className="border-2 border-gray-200 p-2 rounded-md w-full"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold text-gray-600 mb-1 block">
+                  Freeze Date
+                </label>
+                <input
+                  type="date"
+                  value={selectedItem.dateFrozen || ''}
+                  onChange={(e) =>
+                    setSelectedItem({ ...selectedItem, dateFrozen: e.target.value })
+                  }
+                  className="border-2 border-gray-200 p-2 rounded-md w-full"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold text-gray-600 mb-1 block">
+                  Expiration Date
+                </label>
+                <input
+                  type="date"
+                  value={selectedItem.expirationDate || ''}
+                  onChange={(e) =>
+                    setSelectedItem({ ...selectedItem, expirationDate: e.target.value })
+                  }
+                  className="border-2 border-gray-200 p-2 rounded-md w-full"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end mt-6 gap-1.5">
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                onClick={() => handleEditItem(selectedIndex!, selectedItem)}
+              >
+                Save
+              </button>
+
+              <button
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
+                onClick={() => setEditModal(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+
+
 
     </div>
   )
@@ -347,8 +478,8 @@ FrozenTrack Features
 
 Core Features (MVP)
 
-Add Frozen Items
-- Name: string
+Add Frozen Items DONE
+- Name: string 
 - Category: vegetables | meat | meals | desserts
 - Quantity: number
 - Date frozen: Date
