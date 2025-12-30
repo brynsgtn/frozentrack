@@ -8,11 +8,15 @@ function App() {
     name: string,
     category: 'vegetable' | 'pork' | 'beef' | 'chicken' | 'fish' | 'dessert',
     quantity: number,
-    unit: '' | 'pcs' | 'pack' | 'kg' | 'g' | 'bottle',
+    unit: 'pcs' | 'pack' | 'kg' | 'g' | 'bottle',
     dateFrozen: string,
     expirationDate: string,
     status: 'fresh' | 'expiringSoon' | 'expired'
   }
+
+  const ITEMS_PER_PAGE: number = 5;
+
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
   const categories: String[] = ['vegetable', 'pork', 'beef', 'chicken', 'fish', 'dessert']
 
@@ -26,7 +30,7 @@ function App() {
     name: '',
     category: 'vegetable',
     quantity: 1,
-    unit: '',
+    unit: 'pcs',
     dateFrozen: today,
     expirationDate: '',
     status: 'fresh'
@@ -50,10 +54,11 @@ function App() {
       setItems([...items, addItem])
       setAddItem({
         name: '',
-        category: 'vegetables',
+        category: 'vegetable',
         quantity: 0,
         dateFrozen: today,
         expirationDate: '',
+        unit: 'pcs',
         status: 'fresh'
       })
       setIsModalOpen(false)
@@ -105,9 +110,21 @@ function App() {
     setSelectedIndex(null)
   }
 
+  const totalItems: number = items.length
+  const totalPages: number = Math.ceil(totalItems / ITEMS_PER_PAGE)
+
+  const startIndex: number = (currentPage - 1) * ITEMS_PER_PAGE
+  const endIndex: number = startIndex + ITEMS_PER_PAGE
+
+  const paginatedItems = items.slice(startIndex, endIndex)
+
+
+
   useEffect(() => {
     console.log('Adding item:', addItem)
-  }, [addItem])
+    console.log('Current items:', items)
+    console.log('Paginated items:', paginatedItems)
+  }, [addItem, items, paginatedItems])
 
 
 
@@ -137,8 +154,8 @@ function App() {
         <div className='w-full'>
           {items.length > 0 ? (
             <div>
-              {items.map((item, index) => (
-                <div className='flex items-center px-3 bg-gray-100 rounded-xl mb-4' key={index}>
+              {paginatedItems.map((item, realIndex) => (
+                <div className='flex items-center px-3 bg-gray-100 rounded-xl mb-4' key={realIndex}>
                   <div className=''>
                     <div className='font-semibold'>{item.name.toUpperCase()}</div>
 
@@ -151,7 +168,7 @@ function App() {
                   <div className='ms-2'>
                     <button
                       className='py-2 rounded-md hover:cursor-pointer'
-                      onClick={() => handleSelectItem(index, item)}>
+                      onClick={() => handleSelectItem(realIndex, item)}>
                       <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 1024 1024" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M396 512a112 112 0 1 0 224 0 112 112 0 1 0-224 0zm546.2-25.8C847.4 286.5 704.1 186 512 186c-192.2 0-335.4 100.5-430.2 300.3a60.3 60.3 0 0 0 0 51.5C176.6 737.5 319.9 838 512 838c192.2 0 335.4-100.5 430.2-300.3 7.7-16.2 7.7-35 0-51.5zM508 688c-97.2 0-176-78.8-176-176s78.8-176 176-176 176 78.8 176 176-78.8 176-176 176z"></path></svg>
                     </button>
                   </div>
@@ -162,12 +179,12 @@ function App() {
                 </div> */}
                   <div className='flex justify-between items-center ms-auto'>
                     <button className='px-1 py-1 text-white rounded-md hover:cursor-pointer bg-blue-500 me-2  transition-transform duration-150 active:scale-90   hover:bg-blue-600'
-                      onClick={() => handleAddQuantity(index)}>
+                      onClick={() => handleAddQuantity(realIndex)}>
                       <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 1024 1024" version="1.1" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><defs></defs><path d="M474 152m8 0l60 0q8 0 8 8l0 704q0 8-8 8l-60 0q-8 0-8-8l0-704q0-8 8-8Z" ></path><path d="M168 474m8 0l672 0q8 0 8 8l0 60q0 8-8 8l-672 0q-8 0-8-8l0-60q0-8 8-8Z" ></path></svg>
                     </button>
                     <div className='py-5 ms-auto'>{item.quantity} {item.unit}</div>
                     <button className='px-1 py-1 ms-2  text-white rounded-md hover:cursor-pointer  bg-blue-500 me-2  transition-transform duration-150 active:scale-90   hover:bg-blue-600'
-                      onClick={() => handleMinusQuantity(index)}>
+                      onClick={() => handleMinusQuantity(realIndex)}>
                       <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 1024 1024" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M872 474H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h720c4.4 0 8-3.6 8-8v-60c0-4.4-3.6-8-8-8z"></path></svg>
                     </button>
 
@@ -186,11 +203,50 @@ function App() {
 
 
         </div>
-        <div className='w-full mt-4 flex items-center justify-between px-4 py-2'>
-          <div>1-5 of 7</div>
-          <div >1 2 3 4 5</div>
+        <div className='w-full mt-4 flex items-center justify-between px-4 py-2 text-sm'>
+          <div>
+            Total items: {totalItems}
+          </div>
+
+          {totalItems > 5 &&
+            <div className='flex gap-2'>
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(p => p - 1)}
+                className='px-2 py-1 rounded-md bg-gray-200 disabled:opacity-50'
+              >
+                Prev
+              </button>
+
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`px-2 py-1 rounded-md ${currentPage === i + 1
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-200'
+                    }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(p => p + 1)}
+                className='px-2 py-1 rounded-md bg-gray-200 disabled:opacity-50'
+              >
+                Next
+              </button>
+            </div>
+          }
+
         </div>
+
       </div>
+
+
+
       {/* Add Item Form */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
@@ -240,7 +296,6 @@ function App() {
                   }
                   required
                 >
-                  <option value="" disabled >Select</option>
                   <option value="pcs">pcs</option>
                   <option value="pack">pack</option>
                   <option value="kg">kg</option>
