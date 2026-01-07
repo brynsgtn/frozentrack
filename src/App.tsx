@@ -26,6 +26,8 @@ function App() {
 
   const [items, setItems] = useState<Item[]>([]);
 
+  const [searchTerm, setSearchTerm] = useState<string>('');
+
   const [addItem, setAddItem] = useState<Item>({
     name: '',
     category: 'vegetable',
@@ -110,13 +112,17 @@ function App() {
     setSelectedIndex(null)
   }
 
-  const totalItems: number = items.length
+  const filteredItems = items.filter(item =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalItems: number = filteredItems.length;
   const totalPages: number = Math.ceil(totalItems / ITEMS_PER_PAGE)
 
   const startIndex: number = (currentPage - 1) * ITEMS_PER_PAGE
   const endIndex: number = startIndex + ITEMS_PER_PAGE
 
-  const paginatedItems = items.slice(startIndex, endIndex)
+  const paginatedItems = filteredItems.slice(startIndex, endIndex)
 
 
 
@@ -134,7 +140,32 @@ function App() {
         <h1 className='text-3xl font-bold mb-4'>Frozen Track</h1>
 
         <button className='bg-blue-500 text-white px-4 py-2 rounded-md mb-4 w-full hover:bg-blue-600 hover:cursor-pointer' onClick={() => setIsModalOpen(true)}>Add Item</button>
-        <input type="text" placeholder="Search" className='border border-gray-300 px-4 py-2 rounded-md mb-4 w-full' />
+        <div className="relative mb-4">
+          <svg
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+            stroke="currentColor"
+            fill="currentColor"
+            strokeWidth="0"
+            viewBox="0 0 1024 1024"
+            height="1em"
+            width="1em"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M909.6 854.5L649.9 594.8C690.2 542.7 712 479 712 412c0-80.2-31.3-155.4-87.9-212.1-56.6-56.7-132-87.9-212.1-87.9s-155.5 31.3-212.1 87.9C143.2 256.5 112 331.8 112 412c0 80.1 31.3 155.5 87.9 212.1C256.5 680.8 331.8 712 412 712c67 0 130.6-21.8 182.7-62l259.7 259.6a8.2 8.2 0 0 0 11.6 0l43.6-43.5a8.2 8.2 0 0 0 0-11.6zM570.4 570.4C528 612.7 471.8 636 412 636s-116-23.3-158.4-65.6C211.3 528 188 471.8 188 412s23.3-116.1 65.6-158.4C296 211.3 352.2 188 412 188s116.1 23.2 158.4 65.6S636 352.2 636 412s-23.3 116.1-65.6 158.4z" />
+          </svg>
+
+          <input
+            type="text"
+            placeholder="Search"
+            className="border border-gray-300 pl-10 pr-4 py-2 rounded-md w-full"
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+          />
+        </div>
+
         <div className="flex flex-wrap gap-2 mb-4">
           {categories.map((category, index) => (
             <button
@@ -152,7 +183,7 @@ function App() {
         </div>
 
         <div className='w-full'>
-          {items.length > 0 ? (
+          {paginatedItems.length > 0 ? (
             <div>
               {paginatedItems.map((item, realIndex) => (
                 <div className='flex items-center px-3 bg-gray-100 rounded-xl mb-4' key={realIndex}>
@@ -203,28 +234,28 @@ function App() {
 
 
         </div>
-        <div className='w-full mt-4 flex items-center justify-between px-4 py-2 text-sm'>
+        {paginatedItems.length > 0 && <div className='w-full mt-4 flex items-center justify-between px-4 py-2 text-sm'>
           <div>
             Total items: {totalItems}
           </div>
 
           {totalItems > 5 &&
             <div className='flex gap-2'>
-              <button
+              {currentPage > 1 && <button
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage(p => p - 1)}
-                className='px-2 py-1 rounded-md bg-gray-200 disabled:opacity-50'
+                className='px-2 py-1 rounded-md bg-transparent disabled:opacity-50 hover:cursor-pointer'
               >
-                Prev
-              </button>
+                <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="#000" strokeWidth="2" points="7 2 17 12 7 22" transform="matrix(-1 0 0 1 24 0)"></polyline></svg>
+              </button>}
 
               {Array.from({ length: totalPages }, (_, i) => (
                 <button
                   key={i}
                   onClick={() => setCurrentPage(i + 1)}
-                  className={`px-2 py-1 rounded-md ${currentPage === i + 1
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-200'
+                  className={`px-2 py-1 rounded-md hover:cursor-pointer ${currentPage === i + 1
+                    ? 'text-blue-500'
+                    : 'text-gray-700'
                     }`}
                 >
                   {i + 1}
@@ -234,14 +265,14 @@ function App() {
               <button
                 disabled={currentPage === totalPages}
                 onClick={() => setCurrentPage(p => p + 1)}
-                className='px-2 py-1 rounded-md bg-gray-200 disabled:opacity-50'
+                className='px-2 py-1 rounded-md bg-transparent disabled:opacity-50 hover:cursor-pointer'
               >
-                Next
+                <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><polyline fill="none" stroke="#000" strokeWidth="2" points="7 2 17 12 7 22"></polyline></svg>
               </button>
             </div>
           }
 
-        </div>
+        </div>}
 
       </div>
 
@@ -580,7 +611,7 @@ Inventory List
 - Sort by expiration date or quantity
 - Filter by category
 
-Edit and Delete Items
+Edit and Delete Items DONE
 - Controlled forms with proper typing
 - Confirmation modal for deletion
 
