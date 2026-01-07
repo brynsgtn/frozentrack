@@ -106,13 +106,29 @@ function App() {
   }
 
   const handleEditItem = (index: number, selectedItem: Item): void => {
+    const updatedItem = {
+      ...selectedItem,
+      status: getItemStatus(selectedItem.expirationDate)
+    };
+
     setItems(prevItems =>
-      prevItems.map((item, i) => i === index ? selectedItem : item)
+      prevItems.map((item, i) => (i === index ? updatedItem : item))
     );
     setEditModal(false)
     setSelectedItem(null)
     setSelectedIndex(null)
   }
+
+  const formatDate = (date: string): string => {
+    if (!date) return 'N/A';
+
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
 
 
 
@@ -124,6 +140,22 @@ function App() {
   const handleCategoryClick = (category: String): void => {
     setFilteredCategory(category);
   }
+
+  const getItemStatus = (expirationDate: string): 'fresh' | 'expiringSoon' | 'expired' => {
+    if (!expirationDate) return 'fresh';
+
+    const today = new Date();
+    const expDate = new Date(expirationDate);
+
+    const diffTime = expDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) return 'expired';
+    if (diffDays <= 7) return 'expiringSoon';
+
+    return 'fresh';
+  };
+
 
   const totalItems: number = filteredItems.length;
   const totalPages: number = Math.ceil(totalItems / ITEMS_PER_PAGE)
@@ -141,6 +173,16 @@ function App() {
     console.log('Paginated items:', paginatedItems)
     console.log('Category filter:', filteredCategory)
   }, [addItem, items, paginatedItems, filteredCategory])
+
+  useEffect(() => {
+    setItems(prevItems =>
+      prevItems.map(item => ({
+        ...item,
+        status: getItemStatus(item.expirationDate)
+      }))
+    );
+  }, [items.length]);
+
 
 
 
@@ -203,9 +245,16 @@ function App() {
 
                   </div>
                   <div className='ms-2'>
-                    <span className="inline-flex items-center rounded-xl bg-green-400/10 px-1.5 py-0.5  text-xs font-medium text-green-400 inset-ring inset-ring-green-500/20">
+                    <span
+                      className={`inline-flex items-center rounded-xl px-1.5 py-0.5 text-xs font-medium
+    ${item.status === 'fresh' && 'bg-green-400/10 text-green-500'}
+    ${item.status === 'expiringSoon' && 'bg-yellow-400/10 text-yellow-600'}
+    ${item.status === 'expired' && 'bg-red-400/10 text-red-500'}
+  `}
+                    >
                       {item.status}
                     </span>
+
                   </div>
                   <div className='ms-2'>
                     <button
@@ -349,8 +398,8 @@ function App() {
               <label className="text-md font-semibold mb-2 block">Expiration Date</label>
               <input type="date" placeholder='Expiration Date' className='border-2 border-gray-300 p-2 rounded-md w-full mb-4' value={addItem?.expirationDate || ''} onChange={(e) => setAddItem({ ...addItem, expirationDate: e.target.value })} required />
               <div className='flex justify-end mt-2'>
-                <button className='bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600' type='submit' >Add</button>
-                <button className='bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 ms-2' onClick={() => setIsModalOpen(false)}>Cancel</button>
+                <button className='bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 hover:cursor-pointer' type='submit' >Add</button>
+                <button className='bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 ms-2 hover:cursor-pointer' onClick={() => setIsModalOpen(false)}>Cancel</button>
               </div>
             </form>
           </div>
@@ -396,7 +445,7 @@ function App() {
                   Freeze Date
                 </p>
                 <p className="border-2 border-gray-200 p-2 rounded-md">
-                  {selectedItem.dateFrozen || 'N/A'}
+                  {formatDate(selectedItem.dateFrozen) || 'N/A'}
                 </p>
               </div>
               <div>
@@ -404,21 +453,21 @@ function App() {
                   Expiration Date
                 </p>
                 <p className="border-2 border-gray-200 p-2 rounded-md">
-                  {selectedItem.expirationDate || 'N/A'}
+                  {formatDate(selectedItem.expirationDate) || 'N/A'}
                 </p>
               </div>
             </div>
 
             <div className="flex justify-end mt-6 gap-1.5">
               <button
-                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 hover:cursor-pointer"
                 onClick={() => openEditItemModal(selectedIndex!, selectedItem)}
               >
                 Edit
               </button>
 
               <button
-                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 hover:cursor-pointer"
                 onClick={() => {
                   if (selectedIndex === null) return
                   setDeleteModal(true)
@@ -428,7 +477,7 @@ function App() {
                 Delete
               </button>
               <button
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 hover:cursor-pointer"
                 onClick={() => setViewModal(false)}
               >
                 Close
@@ -472,23 +521,6 @@ function App() {
                   }
                   className="border-2 border-gray-200 p-2 rounded-md w-full capitalize"
                 />
-              </div>
-
-              <div>
-                <label className="text-sm font-semibold text-gray-600 mb-1 block">
-                  Status
-                </label>
-                <select
-                  value={selectedItem.status}
-                  onChange={(e) =>
-                    setSelectedItem({ ...selectedItem, status: e.target.value as 'fresh' | 'expiringSoon' | 'expired' })
-                  }
-                  className="border-2 border-gray-200 p-2 rounded-md w-full"
-                >
-                  <option value="fresh">Fresh</option>
-                  <option value="expiringSoon">Expiring</option>
-                  <option value="expired">Expired</option>
-                </select>
               </div>
 
               <div>
@@ -537,14 +569,14 @@ function App() {
 
             <div className="flex justify-end mt-6 gap-1.5">
               <button
-                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 hover:cursor-pointer"
                 onClick={() => handleEditItem(selectedIndex!, selectedItem)}
               >
                 Save
               </button>
 
               <button
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 hover:cursor-pointer"
                 onClick={() => setEditModal(false)}
               >
                 Cancel
@@ -569,14 +601,14 @@ function App() {
 
             <div className="flex justify-end gap-2">
               <button
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 hover:cursor-pointer"
                 onClick={() => setDeleteModal(false)}
               >
                 Cancel
               </button>
 
               <button
-                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 hover:cursor-pointer"
                 onClick={() => {
                   if (selectedIndex === null) return
                   handleDeleteItem(selectedIndex)
@@ -604,6 +636,15 @@ export default App
 
 
 /*
+
+TO DO LIST
+- Separate components on diffrent files
+- Add local storage to save items on browser refresh
+- Deploy to AWS
+- Add unit tests
+
+-------------------------------------
+
 =====================================
 FrozenTrack Features
 =====================================
@@ -617,17 +658,20 @@ Add Frozen Items DONE
 - Date frozen: Date
 - Expiration date: Date
 
-Inventory List
-- Typed item list using interfaces or types
-- Sort by expiration date or quantity
+Inventory List DONE
+- Display all items
+- Pagination (5 items per page)
+
+Search and Filter DONE
+- Search by name
 - Filter by category
 
 Edit and Delete Items DONE
 - Controlled forms with proper typing
 - Confirmation modal for deletion
 
-Expiration Alerts (UI-based)
-- Highlight items expiring soon
+Expiration Updates (UI-based) DONE
+- Automatic status update based on current date
 - Status labels:
   - Fresh
   - Expiring Soon
@@ -635,47 +679,4 @@ Expiration Alerts (UI-based)
 
 -------------------------------------
 
-Intermediate Features
-Focus: Stronger TypeScript practice
-
-Strict Typing
-- Enums for categories and item status
-- Utility types: Partial, Pick, Omit
-- Custom hooks with generics
-
-Search Functionality
-- Typed search input
-- Case-insensitive matching
-
-Local Storage Persistence
-- Typed storage helpers
-- Restore state safely on reload
-
-Reusable Components
-- Typed table, form, modal, badge components
-- Props validation using TypeScript instead of PropTypes
-
--------------------------------------
-
-Advanced Features
-Focus: Portfolio-ready features
-
-Notifications Logic
-- Days-before-expiry setting
-- Computed reminders using date utilities
-
-Analytics Dashboard
-- Total items count
-- Expired vs usable items
-- Category breakdown
-
-Batch Actions
-- Select multiple items
-- Delete or update quantities in bulk
-
-Optional Backend or Auth
-- Firebase or simple Express API
-- User-specific inventories
-
-=====================================
 */
