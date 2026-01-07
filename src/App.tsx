@@ -18,7 +18,7 @@ function App() {
 
   const [currentPage, setCurrentPage] = useState<number>(1);
 
-  const categories: String[] = ['vegetable', 'pork', 'beef', 'chicken', 'fish', 'dessert']
+  const categories: String[] = ['all', 'vegetable', 'pork', 'beef', 'chicken', 'fish', 'dessert']
 
   const today: string = new Date().toISOString().split('T')[0];
 
@@ -27,6 +27,8 @@ function App() {
   const [items, setItems] = useState<Item[]>([]);
 
   const [searchTerm, setSearchTerm] = useState<string>('');
+
+  const [filteredCategory, setFilteredCategory] = useState<String>('all');
 
   const [addItem, setAddItem] = useState<Item>({
     name: '',
@@ -112,9 +114,16 @@ function App() {
     setSelectedIndex(null)
   }
 
+
+
   const filteredItems = items.filter(item =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    item.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    (filteredCategory === 'all' || item.category === filteredCategory)
   );
+
+  const handleCategoryClick = (category: String): void => {
+    setFilteredCategory(category);
+  }
 
   const totalItems: number = filteredItems.length;
   const totalPages: number = Math.ceil(totalItems / ITEMS_PER_PAGE)
@@ -130,7 +139,8 @@ function App() {
     console.log('Adding item:', addItem)
     console.log('Current items:', items)
     console.log('Paginated items:', paginatedItems)
-  }, [addItem, items, paginatedItems])
+    console.log('Category filter:', filteredCategory)
+  }, [addItem, items, paginatedItems, filteredCategory])
 
 
 
@@ -170,15 +180,16 @@ function App() {
           {categories.map((category, index) => (
             <button
               key={index}
-              className="inline-flex items-center rounded-xl bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700
-                 hover:bg-blue-200 hover:scale-105 transition-all duration-200 shadow-sm hover:cursor-pointer"
+              className={`inline-flex items-center rounded-xl bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700
+                 hover:bg-blue-200 hover:scale-105 transition-all duration-200 shadow-sm hover:cursor-pointer ${category === filteredCategory ? 'bg-blue-500 text-white hover:bg-blue-600' : ''}`}
+              onClick={() => handleCategoryClick(category)}
             >
               {category}
             </button>
           ))}
         </div>
         <div className='flex items-center mb-2'>
-          <h3 className='text-lg font-medium '>All Items</h3>
+          <h3 className='text-lg font-medium '>{filteredCategory === 'all' ? 'ALL ITEMS' : `${filteredCategory.toUpperCase()} ITEMS`}</h3>
           {/* <button className='ms-auto text-sm hover:cursor-pointer transition-transform duration-150 active:scale-90 hover:text-blue-500'>Edit</button> */}
         </div>
 
