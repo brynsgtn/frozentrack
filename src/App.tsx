@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react'
+import {  useEffect, useState } from 'react'
 import './App.css'
 
 function App() {
@@ -22,9 +22,10 @@ function App() {
 
   const today: string = new Date().toISOString().split('T')[0];
 
+  const itemsInStorage: string | null = localStorage.getItem('frozenItems');
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
 
-  const [items, setItems] = useState<Item[]>([]);
+  const [items, setItems] = useState<Item[]>(itemsInStorage ? JSON.parse(itemsInStorage) : []);
 
   const [searchTerm, setSearchTerm] = useState<string>('');
 
@@ -183,6 +184,9 @@ function App() {
     );
   }, [items.length]);
 
+  useEffect(() => {
+    localStorage.setItem('frozenItems', JSON.stringify(items))
+  }, [items])
 
 
 
