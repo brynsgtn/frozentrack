@@ -4,6 +4,7 @@ import './App.css'
 import AddItem from './components/AddItem'
 import ViewItem from './components/ViewItem'
 import EditItem from './components/EditItem'
+import DeleteItem from './components/DeleteItem'
 
 
 export type Item = {
@@ -42,10 +43,20 @@ type EditItemContext = {
   selectedIndex: number | null;
 }
 
+type DeleteItemContext = {
+  deleteModal: boolean;
+  selectedItem: Item | null;
+  setDeleteModal: React.Dispatch<React.SetStateAction<boolean>>;
+  setViewModal: React.Dispatch<React.SetStateAction<boolean>>;
+  handleDeleteItem: (index: number) => void;
+  selectedIndex: number | null;
+}
+
 
 export const AddItemContext = createContext<AddItemContext | null>(null)
 export const ViewItemContext = createContext<ViewItemContext | null>(null)
 export const EditItemContext = createContext<EditItemContext | null>(null)
+export const DeleteItemContext = createContext<DeleteItemContext | null>(null)
 
 export const formatDate = (date: string): string => {
   if (!date) return 'N/A';
@@ -382,7 +393,6 @@ function App() {
         </div>}
 
       </div>
-
       <AddItemContext.Provider value={{ isModalOpen, handleAddItem, addItem, setAddItem, setIsModalOpen }}>
         <AddItem />
       </AddItemContext.Provider>
@@ -395,49 +405,9 @@ function App() {
         <EditItem />
       </EditItemContext.Provider>
 
-      {/* Delete Item Modal */}
-      {deleteModal && selectedItem && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-          <div className="bg-white px-4 py-6 rounded-xl shadow-md w-full max-w-sm">
-            <h2 className="text-xl font-bold mb-2 text-red-600">
-              Delete Item
-            </h2>
-
-            <p className="text-gray-600 mb-4">
-              Are you sure you want to delete
-              <span className="font-semibold"> {selectedItem.name}</span>?
-              This action cannot be undone.
-            </p>
-
-            <div className="flex justify-end gap-2">
-              <button
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 hover:cursor-pointer"
-                onClick={() => setDeleteModal(false)}
-              >
-                Cancel
-              </button>
-
-              <button
-                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 hover:cursor-pointer"
-                onClick={() => {
-                  if (selectedIndex === null) return
-                  handleDeleteItem(selectedIndex)
-                  setDeleteModal(false)
-                  setViewModal(false)
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-
-
-
-
-
+      <DeleteItemContext.Provider value={{ deleteModal, selectedItem, setDeleteModal, setViewModal, handleDeleteItem, selectedIndex }}>
+        <DeleteItem />
+      </DeleteItemContext.Provider>
     </div>
   )
 }
@@ -448,8 +418,6 @@ export default App
 /*
 
 TO DO LIST
-- Separate components on different files DONE (AddItem, ViewItem, EditItem)
-- Add local storage to save items on browser refresh(DONE)
 - Deploy to AWS
 - Add unit tests
 
