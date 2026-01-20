@@ -1,8 +1,8 @@
 import { useContext } from "react";
-import { EditItemContext } from "../App";
+import { AppContext } from "../App";
 
 const EditItem = () => {
-    const { editModal, selectedItem, setSelectedItem, handleEditItem, setEditModal, selectedIndex } = useContext(EditItemContext)!;
+    const { editModal, selectedItem, setSelectedItem, handleEditItem, setEditModal, selectedIndex } = useContext(AppContext)!;
     return (
         <div>
             {editModal && selectedItem && (

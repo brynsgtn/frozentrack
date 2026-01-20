@@ -1,11 +1,11 @@
 import { useContext } from 'react'
-import { AddItemContext } from '../App'
+import { AppContext } from '../App'
 import type { Item } from '../App'
 
 
 const AddItem  = () => {
 
-  const {isModalOpen, handleAddItem, addItem, setAddItem, setIsModalOpen} = useContext(AddItemContext)!;
+  const {isModalOpen, handleAddItem, addItem, setAddItem, setIsModalOpen} = useContext(AppContext)!;
 
     return (
         <div>

@@ -1,10 +1,10 @@
 import { useContext } from 'react'
-import { DeleteItemContext } from '../App'
+import { AppContext } from '../App'
 
 
 const DeleteItem = () => {
 
-    const { deleteModal, selectedItem, setDeleteModal, setViewModal, handleDeleteItem, selectedIndex } = useContext(DeleteItemContext)!;
+    const { deleteModal, selectedItem, setDeleteModal, setViewModal, handleDeleteItem, selectedIndex } = useContext(AppContext)!;
     return (
         <div>
             {deleteModal && selectedItem && (

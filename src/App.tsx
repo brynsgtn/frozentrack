@@ -17,46 +17,29 @@ export type Item = {
   status: 'fresh' | 'expiringSoon' | 'expired'
 }
 
-type AddItemContext = {
+type AppContext = {
   isModalOpen: boolean;
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   handleAddItem: (e: React.FormEvent<HTMLFormElement>) => void;
   addItem: Item;
   setAddItem: React.Dispatch<React.SetStateAction<Item>>;
-};
-
-type ViewItemContext = {
   viewModal: boolean;
-  selectedItem: Item | null;
   openEditItemModal: (index: number, item: Item) => void;
-  setDeleteModal: React.Dispatch<React.SetStateAction<boolean>>;
-  setViewModal: React.Dispatch<React.SetStateAction<boolean>>;
-  selectedIndex?: number | null;
-};
-
-type EditItemContext = {
   editModal: boolean;
-  selectedItem: Item | null;
   setSelectedItem: React.Dispatch<React.SetStateAction<Item | null>>;
   handleEditItem: (index: number, selectedItem: Item) => void;
   setEditModal: React.Dispatch<React.SetStateAction<boolean>>;
-  selectedIndex: number | null;
-}
-
-type DeleteItemContext = {
   deleteModal: boolean;
   selectedItem: Item | null;
   setDeleteModal: React.Dispatch<React.SetStateAction<boolean>>;
   setViewModal: React.Dispatch<React.SetStateAction<boolean>>;
   handleDeleteItem: (index: number) => void;
   selectedIndex: number | null;
-}
+};
 
 
-export const AddItemContext = createContext<AddItemContext | null>(null)
-export const ViewItemContext = createContext<ViewItemContext | null>(null)
-export const EditItemContext = createContext<EditItemContext | null>(null)
-export const DeleteItemContext = createContext<DeleteItemContext | null>(null)
+
+export const AppContext = createContext<AppContext | null>(null);
 
 export const formatDate = (date: string): string => {
   if (!date) return 'N/A';
@@ -393,21 +376,12 @@ function App() {
         </div>}
 
       </div>
-      <AddItemContext.Provider value={{ isModalOpen, handleAddItem, addItem, setAddItem, setIsModalOpen }}>
+      <AppContext.Provider value={{ isModalOpen, handleAddItem, addItem, setAddItem, setIsModalOpen, viewModal, selectedItem, openEditItemModal, setDeleteModal, setViewModal, selectedIndex, editModal, setSelectedItem, handleEditItem, setEditModal, deleteModal, handleDeleteItem }}>
         <AddItem />
-      </AddItemContext.Provider>
-
-      <ViewItemContext.Provider value={{ viewModal, selectedItem, openEditItemModal, setDeleteModal, setViewModal, selectedIndex }}>
         <ViewItem />
-      </ViewItemContext.Provider>
-
-      <EditItemContext.Provider value={{ editModal, selectedItem, setSelectedItem, handleEditItem, setEditModal, selectedIndex }}>
         <EditItem />
-      </EditItemContext.Provider>
-
-      <DeleteItemContext.Provider value={{ deleteModal, selectedItem, setDeleteModal, setViewModal, handleDeleteItem, selectedIndex }}>
         <DeleteItem />
-      </DeleteItemContext.Provider>
+      </AppContext.Provider>
     </div>
   )
 }

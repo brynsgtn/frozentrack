@@ -1,10 +1,10 @@
 
 import { useContext } from 'react'
-import { ViewItemContext, formatDate } from '../App'
+import { AppContext, formatDate } from '../App'
 
 
 const ViewItem = () => {
-     const { viewModal, selectedItem, openEditItemModal, setDeleteModal, setViewModal, selectedIndex } = useContext(ViewItemContext)!;
+     const { viewModal, selectedItem, openEditItemModal, setDeleteModal, setViewModal, selectedIndex } = useContext(AppContext)!;
      
     return (
         <div>
