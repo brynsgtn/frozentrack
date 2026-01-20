@@ -72,7 +72,7 @@ function App() {
 
   const [searchTerm, setSearchTerm] = useState<string>('');
 
-  const [filteredCategory, setFilteredCategory] = useState<String>('all');
+  const [filteredCategory, setFilteredCategory] = useState<string>('all');
 
   const [addItem, setAddItem] = useState<Item>({
     name: '',
@@ -173,7 +173,7 @@ function App() {
     (filteredCategory === 'all' || item.category === filteredCategory)
   );
 
-  const handleCategoryClick = (category: String): void => {
+  const handleCategoryClick = (category: string): void => {
     setFilteredCategory(category);
   }
 
@@ -328,7 +328,7 @@ function App() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-4 h-20 grid place-items-center">
+            <div className="text-center py-4 min-h-30 grid place-items-center">
               <p className="text-gray-500">No items found</p>
             </div>
           )}
