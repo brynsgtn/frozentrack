@@ -3,6 +3,7 @@ import { useEffect, useState, createContext } from 'react'
 import './App.css'
 import AddItem from './components/AddItem'
 import ViewItem from './components/ViewItem'
+import EditItem from './components/EditItem'
 
 
 export type Item = {
@@ -32,9 +33,19 @@ type ViewItemContext = {
   selectedIndex?: number | null;
 };
 
+type EditItemContext = {
+  editModal: boolean;
+  selectedItem: Item | null;
+  setSelectedItem: React.Dispatch<React.SetStateAction<Item | null>>;
+  handleEditItem: (index: number, selectedItem: Item) => void;
+  setEditModal: React.Dispatch<React.SetStateAction<boolean>>;
+  selectedIndex: number | null;
+}
+
+
 export const AddItemContext = createContext<AddItemContext | null>(null)
 export const ViewItemContext = createContext<ViewItemContext | null>(null)
-
+export const EditItemContext = createContext<EditItemContext | null>(null)
 
 export const formatDate = (date: string): string => {
   if (!date) return 'N/A';
@@ -375,109 +386,14 @@ function App() {
       <AddItemContext.Provider value={{ isModalOpen, handleAddItem, addItem, setAddItem, setIsModalOpen }}>
         <AddItem />
       </AddItemContext.Provider>
+
       <ViewItemContext.Provider value={{ viewModal, selectedItem, openEditItemModal, setDeleteModal, setViewModal, selectedIndex }}>
         <ViewItem />
       </ViewItemContext.Provider>
 
-
-
-      {/* Edit Item Modal */}
-      {editModal && selectedItem && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-          <div className="bg-white px-4 py-6 rounded-xl shadow-md w-full max-w-sm">
-            <h1 className="text-3xl font-bold mb-4">Edit Item</h1>
-
-            <div className="space-y-3">
-              <div>
-                <label className="text-sm font-semibold text-gray-600 mb-1 block">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  value={selectedItem.name}
-                  onChange={(e) =>
-                    setSelectedItem({ ...selectedItem, name: e.target.value })
-                  }
-                  className="border-2 border-gray-200 p-2 rounded-md w-full"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-semibold text-gray-600 mb-1 block">
-                  Category
-                </label>
-                <input
-                  type="text"
-                  value={selectedItem.category}
-                  onChange={(e) =>
-                    setSelectedItem({ ...selectedItem, category: e.target.value as 'vegetable' | 'pork' | 'beef' | 'chicken' | 'fish' | 'dessert', })
-                  }
-                  className="border-2 border-gray-200 p-2 rounded-md w-full capitalize"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-semibold text-gray-600 mb-1 block">
-                  Quantity
-                </label>
-                <input
-                  type="number"
-                  value={selectedItem.quantity}
-                  min={1}
-                  onChange={(e) =>
-                    setSelectedItem({ ...selectedItem, quantity: Number(e.target.value) })
-                  }
-                  className="border-2 border-gray-200 p-2 rounded-md w-full"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-semibold text-gray-600 mb-1 block">
-                  Freeze Date
-                </label>
-                <input
-                  type="date"
-                  value={selectedItem.dateFrozen || ''}
-                  onChange={(e) =>
-                    setSelectedItem({ ...selectedItem, dateFrozen: e.target.value })
-                  }
-                  className="border-2 border-gray-200 p-2 rounded-md w-full"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-semibold text-gray-600 mb-1 block">
-                  Expiration Date
-                </label>
-                <input
-                  type="date"
-                  value={selectedItem.expirationDate || ''}
-                  onChange={(e) =>
-                    setSelectedItem({ ...selectedItem, expirationDate: e.target.value })
-                  }
-                  className="border-2 border-gray-200 p-2 rounded-md w-full"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end mt-6 gap-1.5">
-              <button
-                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 hover:cursor-pointer"
-                onClick={() => handleEditItem(selectedIndex!, selectedItem)}
-              >
-                Save
-              </button>
-
-              <button
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 hover:cursor-pointer"
-                onClick={() => setEditModal(false)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <EditItemContext.Provider value={{ editModal, selectedItem, setSelectedItem, handleEditItem, setEditModal, selectedIndex }}>
+        <EditItem />
+      </EditItemContext.Provider>
 
       {/* Delete Item Modal */}
       {deleteModal && selectedItem && (
@@ -532,7 +448,7 @@ export default App
 /*
 
 TO DO LIST
-- Separate components on different files DONE (AddItem)
+- Separate components on different files DONE (AddItem, ViewItem, EditItem)
 - Add local storage to save items on browser refresh(DONE)
 - Deploy to AWS
 - Add unit tests
