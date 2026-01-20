@@ -2,16 +2,18 @@
 import { useEffect, useState, createContext } from 'react'
 import './App.css'
 import AddItem from './components/AddItem'
+import ViewItem from './components/ViewItem'
 
-  export type Item = {
-    name: string,
-    category: 'vegetable' | 'pork' | 'beef' | 'chicken' | 'fish' | 'dessert',
-    quantity: number,
-    unit: 'pcs' | 'pack' | 'kg' | 'g' | 'bottle',
-    dateFrozen: string,
-    expirationDate: string,
-    status: 'fresh' | 'expiringSoon' | 'expired'
-  }
+
+export type Item = {
+  name: string,
+  category: 'vegetable' | 'pork' | 'beef' | 'chicken' | 'fish' | 'dessert',
+  quantity: number,
+  unit: 'pcs' | 'pack' | 'kg' | 'g' | 'bottle',
+  dateFrozen: string,
+  expirationDate: string,
+  status: 'fresh' | 'expiringSoon' | 'expired'
+}
 
 type AddItemContext = {
   isModalOpen: boolean;
@@ -21,7 +23,29 @@ type AddItemContext = {
   setAddItem: React.Dispatch<React.SetStateAction<Item>>;
 };
 
+type ViewItemContext = {
+  viewModal: boolean;
+  selectedItem: Item | null;
+  openEditItemModal: (index: number, item: Item) => void;
+  setDeleteModal: React.Dispatch<React.SetStateAction<boolean>>;
+  setViewModal: React.Dispatch<React.SetStateAction<boolean>>;
+  selectedIndex?: number | null;
+};
+
 export const AddItemContext = createContext<AddItemContext | null>(null)
+export const ViewItemContext = createContext<ViewItemContext | null>(null)
+
+
+export const formatDate = (date: string): string => {
+  if (!date) return 'N/A';
+
+  return new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+};
+
 
 function App() {
 
@@ -135,16 +159,6 @@ function App() {
     setSelectedItem(null)
     setSelectedIndex(null)
   }
-
-  const formatDate = (date: string): string => {
-    if (!date) return 'N/A';
-
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
 
 
 
@@ -361,88 +375,10 @@ function App() {
       <AddItemContext.Provider value={{ isModalOpen, handleAddItem, addItem, setAddItem, setIsModalOpen }}>
         <AddItem />
       </AddItemContext.Provider>
+      <ViewItemContext.Provider value={{ viewModal, selectedItem, openEditItemModal, setDeleteModal, setViewModal, selectedIndex }}>
+        <ViewItem />
+      </ViewItemContext.Provider>
 
-
-      {/* View Item Modal */}
-      {viewModal && selectedItem && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-          <div className="bg-white px-4 py-6 rounded-xl shadow-md w-full max-w-sm">
-            <h1 className="text-3xl font-bold mb-4">Item Details</h1>
-
-            <div className="space-y-3">
-              <div>
-                <p className="text-sm font-semibold text-gray-600 mb-1">Name</p>
-                <p className="border-2 border-gray-200 p-2 rounded-md">
-                  {selectedItem.name}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-sm font-semibold text-gray-600 mb-1">Category</p>
-                <p className="border-2 border-gray-200 p-2 rounded-md capitalize">
-                  {selectedItem.category}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-sm font-semibold text-gray-600 mb-1">Status</p>
-                <p className="border-2 border-gray-200 p-2 rounded-md capitalize">
-                  {selectedItem.status}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-sm font-semibold text-gray-600 mb-1">Quantity</p>
-                <p className="border-2 border-gray-200 p-2 rounded-md">
-                  {selectedItem.quantity} {selectedItem.unit}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-600 mb-1">
-                  Freeze Date
-                </p>
-                <p className="border-2 border-gray-200 p-2 rounded-md">
-                  {formatDate(selectedItem.dateFrozen) || 'N/A'}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-600 mb-1">
-                  Expiration Date
-                </p>
-                <p className="border-2 border-gray-200 p-2 rounded-md">
-                  {formatDate(selectedItem.expirationDate) || 'N/A'}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex justify-end mt-6 gap-1.5">
-              <button
-                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 hover:cursor-pointer"
-                onClick={() => openEditItemModal(selectedIndex!, selectedItem)}
-              >
-                Edit
-              </button>
-
-              <button
-                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 hover:cursor-pointer"
-                onClick={() => {
-                  if (selectedIndex === null) return
-                  setDeleteModal(true)
-                }}
-
-              >
-                Delete
-              </button>
-              <button
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 hover:cursor-pointer"
-                onClick={() => setViewModal(false)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
 
       {/* Edit Item Modal */}
@@ -596,8 +532,8 @@ export default App
 /*
 
 TO DO LIST
-- Separate components on diffrent files
-- Add local storage to save items on browser refresh
+- Separate components on different files DONE (AddItem)
+- Add local storage to save items on browser refresh(DONE)
 - Deploy to AWS
 - Add unit tests
 
